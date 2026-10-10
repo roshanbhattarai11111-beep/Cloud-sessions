@@ -51,7 +51,8 @@ h2{font-size:21px;letter-spacing:.01em}
 .headline .dot{width:14px;height:14px;border-radius:50%;background:var(--ok);flex:none;animation:ring 2.4s infinite}
 .headline.need .dot{background:var(--wait)}
 .headline span{display:block;font-weight:400;font-size:14px;color:var(--hero-dim)}
-.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+@media (max-width:780px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:680px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .kpi{background:color-mix(in srgb,var(--hero-ink) 8%,transparent);border:1px solid color-mix(in srgb,var(--hero-ink) 14%,transparent);border-radius:12px;padding:12px 14px;display:grid;gap:2px;transition:transform .25s}
 .kpi:hover{transform:translateY(-2px)}
@@ -398,6 +399,7 @@ button{position:relative;overflow:hidden}.rp{position:absolute;border-radius:50%
       <div class="kpi" id="kOkBox"><b class="num" id="kOk">0</b><span>Waiting for your OK</span></div>
       <div class="kpi"><b class="num" id="kDone">0</b><span>Tasks done today</span></div>
       <div class="kpi"><b class="num" id="kTok">0</b><span>Weekly plan used</span></div>
+      <div class="kpi"><b class="num" id="kGem">7</b><span>Agents on Gemini</span></div>
     </div>
     <div class="next" id="next" aria-label="Up next"></div>
   </section>
@@ -556,8 +558,13 @@ button{position:relative;overflow:hidden}.rp{position:absolute;border-radius:50%
 .pv-car{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;margin-top:10px;padding-bottom:6px}.pv-sl{flex:0 0 78%;aspect-ratio:1;scroll-snap-align:start;border-radius:8px;background:linear-gradient(150deg,#0c2833,#123a48 60%,#12806e);color:#eaf4f6;padding:16px;display:flex;flex-direction:column;justify-content:center;gap:8px}.pv-sl small{font:600 11px var(--m);color:#c08a2e}.pv-sl p{margin:0;font:600 16px/1.35 var(--c)}.pv-doc{font-size:12px;color:#666;margin-top:4px}
 .late{font-size:12px;font-weight:600;color:var(--wait)}
 .split{margin:-6px 0 16px}.sbar{display:flex;height:10px;border-radius:6px;overflow:hidden;background:var(--soft)}.sbar i{display:block;height:100%;transition:width 1.2s}.sbar .cl{background:var(--acc)}.sbar .ge{background:#8e6cf0}
-.slg{font:12px var(--m);color:var(--ink3);margin-top:6px}
-.ai-src{font:12px var(--m);color:var(--ink3);margin-left:5px}
+.slg{display:flex;gap:16px;font:12px var(--m);color:var(--ink3);margin-top:6px;flex-wrap:wrap}
+.slg span{display:inline-flex;align-items:center;gap:5px}
+.slg .dot-cl{width:8px;height:8px;border-radius:50%;background:var(--acc);flex:none}
+.slg .dot-ge{width:8px;height:8px;border-radius:50%;background:#8e6cf0;flex:none}
+.ai-src{display:inline-flex;align-items:center;font:600 10px var(--m);letter-spacing:.02em;padding:1px 7px 1px 6px;border-radius:99px;margin-left:6px;vertical-align:middle;white-space:nowrap;transition:opacity .25s}
+.ai-src.ge{background:color-mix(in srgb,#8e6cf0 15%,transparent);color:#8e6cf0;border:1px solid color-mix(in srgb,#8e6cf0 35%,transparent)}
+.ai-src.cl{background:color-mix(in srgb,var(--acc) 12%,transparent);color:var(--acc);border:1px solid color-mix(in srgb,var(--acc) 28%,transparent)}
 .ai-kpis{display:flex;gap:12px;margin:12px 0 16px}
 .ai-kpi{flex:1;border-radius:10px;padding:12px 16px;border-left:4px solid currentColor}
 .ai-kpi.cl{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 8%,transparent)}
@@ -638,7 +645,7 @@ function person(a,isHead){
   var c=el("div","p"+(isHead?" head":"")+" "+(a.status||""));c.dataset.pid=a.id;
   var top=el("div","top"),av=el("div","av "+(a.status||""),ini(who(a)));av.style.background=hue(a.id);av.appendChild(el("span","s "+(a.status||"")));
   var nm=el("div");nm.appendChild(el("b",null,who(a)));nm.appendChild(el("span","ttl",a.person?a.name:""));
-  var isGemini=GEMINI_AGENTS.indexOf(a.id)>=0;var mdl=AGENT_MODELS[a.id]||"";nm.appendChild(el("span","ai-src",isGemini?"(Gemini · "+mdl+")":"(Claude · "+mdl+")"));
+  var isGemini=GEMINI_AGENTS.indexOf(a.id)>=0;var mdl=AGENT_MODELS[a.id]||"";nm.appendChild(el("span","ai-src "+(isGemini?"ge":"cl"),isGemini?"✦ "+mdl:"◈ "+mdl));
   top.appendChild(av);top.appendChild(nm);c.appendChild(top);
   var busy=a.status==="running"||a.status==="blocked"||a.status==="waiting"||a.status==="failed";
   c.appendChild(el("div","what",(WORD[a.status]||"Off duty")+": "+(busy?(a.activity||""):(a.focus||a.activity||"Standing by for the mission"))));
@@ -670,7 +677,7 @@ function render(){
   var ht=$("headText");ht.textContent=working.length?working.map(who).join(", ")+(working.length>1?" are":" is")+" working right now":n?"The team is off duty · "+n+(n>1?" things need you":" thing needs you"):"All quiet. Nothing needs you right now.";
   var s=[];if(pend.length)s.push(pend.length+" to approve");if(stuck.length)s.push(stuck.length+" stuck");if(todos.length)s.push(todos.length+" to-do");
   if(s.length)ht.appendChild(el("span",null,s.join(" · ")));
-  count($("kWork"),working.length,String);count($("kOk"),pend.length,String);count($("kDone"),doneToday,String);var lu=S.usage.slice().sort(function(x,y){return new Date(y.date)-new Date(x.date)}).filter(function(u){return typeof u.weeklyPct==="number"})[0];count($("kTok"),lu?Math.round(lu.weeklyPct):0,function(n){return lu?n+"%":"–"});
+  count($("kWork"),working.length,String);count($("kOk"),pend.length,String);count($("kDone"),doneToday,String);var lu=S.usage.slice().sort(function(x,y){return new Date(y.date)-new Date(x.date)}).filter(function(u){return typeof u.weeklyPct==="number"})[0];count($("kTok"),lu?Math.round(lu.weeklyPct):0,function(n){return lu?n+"%":"–"});if($("kGem"))$("kGem").textContent=GEMINI_AGENTS.length;
   $("kOkBox").className="kpi"+(pend.length?" warn":"");
   var bd=$("okBadge");bd.hidden=!pend.length;bd.textContent=pend.length;
 
@@ -863,7 +870,7 @@ function renderSb(){var R=S.res||{},D=(R.days||[]).slice().sort(function(a,b){re
   S.agents.filter(function(a){return a.group!=="subagent"}).forEach(function(a){var n=0;S.reports.forEach(function(r){(r.entries||[]).forEach(function(e){if(new Date(e.time)>wk&&(e.person===a.person||e.agent===a.name))n++})});
     var tk=U.filter(function(u){return u.id.slice(11)===a.id&&new Date(u.date)>wk}).reduce(function(t,u){return t+(u.tokens||0)},0),paused=(S.ctl.paused||{})[a.id];
     var vd=paused?["off","Paused"]:n>=2?["ok","✓ Delivering"]:n===1?["mid","◐ Light week"]:["bad","✕ Nothing delivered"];
-    var r=el("div","vr");r.innerHTML='<span><b>'+who(a)+'</b> <small>'+(a.name||"")+'</small> <span class="ai-src">'+(GEMINI_AGENTS.indexOf(a.id)>=0?"(Gemini)":"(Claude)")+'</span></span><span class="num">'+n+' task'+(n===1?"":"s")+'</span><span class="num">'+(tk?fmt(tk):"–")+'</span>';var vs=el("span","vd "+vd[0],vd[1]);
+    var r=el("div","vr");r.innerHTML='<span><b>'+who(a)+'</b> <small>'+(a.name||"")+'</small> <span class="ai-src '+(GEMINI_AGENTS.indexOf(a.id)>=0?"ge":"cl")+'">'+(GEMINI_AGENTS.indexOf(a.id)>=0?"✦ Gemini":"◈ Claude")+'</span></span><span class="num">'+n+' task'+(n===1?"":"s")+'</span><span class="num">'+(tk?fmt(tk):"–")+'</span>';var vs=el("span","vd "+vd[0],vd[1]);
     if(vd[0]==="bad"&&a.taskId){var pb=el("button","sm","Pause");pb.onclick=function(){pb.disabled=true;var p=Object.assign({},S.ctl.paused);p[a.id]=true;saveCtl({paused:p})};vs.appendChild(pb)}
     r.appendChild(vs);vt.appendChild(r)})}
 
@@ -973,11 +980,11 @@ function renderTok(tokToday){
   var wk=S.agents.reduce(function(t,a){return t+(a.runsPerWeek||0)*(act[a.id]||a.perRun||0)},0);
   count($("tToday"),tokToday);var cl=0,ge=0;U.forEach(function(u){cl+=u.tokens||0;ge+=u.gemini||0});
   count($("kClaude"),cl);count($("kGemini"),ge);
-  var sp=$("split"),tt=Math.max(1,cl+ge);sp.innerHTML="";var bar=el("div","sbar");var i1=el("i","cl");i1.style.width=cl/tt*100+"%";var i2=el("i","ge");i2.style.width=ge/tt*100+"%";bar.appendChild(i1);bar.appendChild(i2);sp.appendChild(bar);sp.appendChild(el("div","slg","● Claude "+fmt(cl)+"   ● Gemini "+fmt(ge)+(ge?"":" (none reported yet)")));count($("tUsed"),used);count($("tWeek"),wk);
+  var sp=$("split"),tt=Math.max(1,cl+ge);sp.innerHTML="";var bar=el("div","sbar");var i1=el("i","cl");i1.style.width=cl/tt*100+"%";var i2=el("i","ge");i2.style.width=ge/tt*100+"%";bar.appendChild(i1);bar.appendChild(i2);sp.appendChild(bar);var lg=el("div","slg");var s1=el("span");s1.appendChild(el("i","dot-cl"));s1.appendChild(document.createTextNode(" Claude "+fmt(cl)));var s2=el("span");s2.appendChild(el("i","dot-ge"));s2.appendChild(document.createTextNode(" Gemini "+fmt(ge)+(ge?"":" (none yet)")));lg.appendChild(s1);lg.appendChild(s2);sp.appendChild(lg);count($("tUsed"),used);count($("tWeek"),wk);
   var ch=$("chart");ch.textContent="";var latest={};U.forEach(function(u){if(!latest[u.agent])latest[u.agent]=u});
   var rows=Object.keys(latest).map(function(k){return latest[k]}),max=Math.max.apply(null,rows.map(function(r){return r.tokens||0}).concat([1]));
   if(!rows.length)ch.appendChild(el("div","empty","No runs reported yet."));
-  rows.sort(function(x,y){return(y.tokens||0)-(x.tokens||0)}).forEach(function(r){var row=el("div","row"),em=el("em",null,r.agent+" "+(GEMINI_AGENTS.indexOf(r.agent)>=0?"(Gemini · "+(AGENT_MODELS[r.agent]||"")+")":"(Claude · "+(AGENT_MODELS[r.agent]||"")+")"));em.title=r.output||"";row.appendChild(em);var b=el("div","b"),i=el("i");i.style.width=Math.max(3,(r.tokens||0)/max*100)+"%";b.appendChild(i);row.appendChild(b);row.appendChild(el("span",null,fmt(r.tokens)));ch.appendChild(row)});
+  rows.sort(function(x,y){return(y.tokens||0)-(x.tokens||0)}).forEach(function(r){var row=el("div","row"),isGrt=GEMINI_AGENTS.indexOf(r.agent)>=0,em=el("em",null,r.agent+" ");em.appendChild(el("span","ai-src "+(isGrt?"ge":"cl"),isGrt?"✦ "+(AGENT_MODELS[r.agent]||"gemini-3.5-flash"):"◈ "+(AGENT_MODELS[r.agent]||"claude")));em.title=r.output||"";row.appendChild(em);var b=el("div","b"),i=el("i");i.style.width=Math.max(3,(r.tokens||0)/max*100)+"%";b.appendChild(i);row.appendChild(b);row.appendChild(el("span",null,fmt(r.tokens)));ch.appendChild(row)});
   // per-agent AI breakdown table
   var ab=$("aiBreakdown");if(ab){ab.textContent="";
     var agTok={};U.forEach(function(u){var k=u.agent||u.id.slice(11);if(!agTok[k])agTok[k]={cl:0,ge:0};agTok[k].cl+=u.tokens||0;agTok[k].ge+=u.gemini||0});
@@ -985,7 +992,7 @@ function renderTok(tokToday){
     if(!agKeys.length){ab.appendChild(el("div","empty","No agent runs reported yet."))}
     else{var hdr=el("div","ai-row");hdr.innerHTML='<b style="font-size:12px;color:var(--ink3)">Agent</b><b style="font-size:12px;color:var(--ink3)">Claude tokens</b><b style="font-size:12px;color:var(--ink3)">Gemini tokens</b>';ab.appendChild(hdr);
     agKeys.forEach(function(k){var d=agTok[k],isGe=GEMINI_AGENTS.indexOf(k)>=0,row=el("div","ai-row");
-      row.appendChild(el("span",null,k+" "+(isGe?"(Gemini · "+(AGENT_MODELS[k]||"")+")":"(Claude · "+(AGENT_MODELS[k]||"")+")")));row.appendChild(el("span",null,""));
+      var sp=el("span",null,k+" ");sp.appendChild(el("span","ai-src "+(isGe?"ge":"cl"),isGe?"✦ "+(AGENT_MODELS[k]||"gemini-3.5-flash"):"◈ "+(AGENT_MODELS[k]||"claude")));row.appendChild(sp);row.appendChild(el("span",null,""));
       row.appendChild(el("span","num",d.cl?fmt(d.cl):"–"));row.appendChild(el("span","num",d.ge?fmt(d.ge):"–"));
       ab.appendChild(row)})}}
 }
@@ -1273,7 +1280,7 @@ clock();setInterval(clock,15000);
         if (rowSig[a.id] !== sig) {
           var fresh = rowSig[a.id] !== undefined; rowSig[a.id] = sig;
           li.className = "orow s-" + st + (fresh && !reduce ? " chg" : "");
-          li.querySelector("b").textContent = shortName(a) + (a.name && a.name !== shortName(a) ? " · " + a.name : "") + " " + (GEMINI_AGENTS.indexOf(a.id)>=0?"(Gemini)":"(Claude)");
+          var bEl=li.querySelector("b");bEl.textContent=shortName(a)+(a.name&&a.name!==shortName(a)?" · "+a.name:"")+" ";var isGfl=GEMINI_AGENTS.indexOf(a.id)>=0;bEl.appendChild(el("span","ai-src "+(isGfl?"ge":"cl"),isGfl?"✦ Gemini":"◈ Claude"));
           li.querySelector("small").textContent = (st === "blocked" || st === "waiting" ? "Needs you: " : "") + what;
           li.querySelector(".oage").textContent = a.updatedAt ? ago(a.updatedAt).replace(" min ago", "m").replace(" h ago", "h").replace(" days ago", "d") : "";
           if (fresh) setTimeout(function () { li.classList.remove("chg"); }, 1000);
@@ -1950,7 +1957,7 @@ function renderReps(){var g=$("repSpark");if(!g)return;var R=repR,from=Date.now(
   if(!A.length)ag.appendChild(el("p","empty","Agents appear here once they report in."));
   A.forEach(function(a,i){var n=Dn[i],tk=U.filter(function(u){return u.id.slice(11)===a.id}).reduce(function(t,u){return t+(+u.tokens||0)},0),paused=(S.ctl.paused||{})[a.id];
     var vd=paused?"Paused":n>=2?"✓ Delivering":n===1?"Light":"Nothing delivered in this period";
-    var r=el("div","ag");r.style.animationDelay=i*70+"ms";var t=el("div","top2");var tlb=el("b",null,who(a)+" · "+(a.name||""));tlb.appendChild(el("span","ai-src",GEMINI_AGENTS.indexOf(a.id)>=0?"(Gemini)":"(Claude)"));t.appendChild(tlb);t.appendChild(el("span","num",n+" done"));r.appendChild(t);
+    var r=el("div","ag");r.style.animationDelay=i*70+"ms";var t=el("div","top2");var tlb=el("b",null,who(a)+" · "+(a.name||""));var isGrp=GEMINI_AGENTS.indexOf(a.id)>=0;tlb.appendChild(el("span","ai-src "+(isGrp?"ge":"cl"),isGrp?"✦ Gemini":"◈ Claude"));t.appendChild(tlb);t.appendChild(el("span","num",n+" done"));r.appendChild(t);
     var b=el("div","bar2"),bi=el("i");bi.style.width=(n/mx*100)+"%";b.appendChild(bi);r.appendChild(b);
     r.appendChild(el("small",null,vd+" · share of plan usage: "+(tot?Math.round(tk/tot*100)+"%":"– (not recorded yet)")));ag.appendChild(r)})}
 function loadGsRanks(){if(!mcp||gsRkLoaded)return;gsRkLoaded=1;
@@ -1967,7 +1974,7 @@ function renderSeo(){var box=$("seoAg");if(!box)return;
   var AG=S.agents.filter(function(a){return a.group==="seo"}).sort(byOrder),R=(S.gsRanks&&S.gsRanks.length?S.gsRanks:(S.seoranks||[]).slice().sort(function(a,b){return a.id<b.id?-1:1})),A=S.seoA||{},U=(S.seoU||{}).checks||[],F=(S.seofixes||[]).filter(function(f){return f.status==="pending"});
   var sig=JSON.stringify([AG.map(function(a){return[a.id,a.status,a.activity,a.updatedAt]}),R.map(function(r){return r.id}),A.at,A.score,U.length&&U[U.length-1].at,F.map(function(f){return f.id}),!!busy.seo]);if(SIG.seo===sig)return;SIG.seo=sig;
   box.textContent="";if(!AG.length)box.appendChild(el("p","empty","The ranking team appears here once it is set up."));
-  AG.forEach(function(a,i){var c=el("div","sa "+(a.status||"idle"));c.style.animationDelay=i*70+"ms";c.appendChild(el("span","sd"));c.appendChild(el("span","k",a.name||""));var pnm=el("b",null,a.person||"");pnm.appendChild(el("span","ai-src",GEMINI_AGENTS.indexOf(a.id)>=0?"(Gemini)":"(Claude)"));c.appendChild(pnm);c.appendChild(el("small",null,a.activity||"Waiting for first run"));c.appendChild(el("small",null,(a.schedule||"")+(a.lastRun?" · last "+ago(a.lastRun):"")));c.title=a.focus||"";box.appendChild(c)});
+  AG.forEach(function(a,i){var c=el("div","sa "+(a.status||"idle"));c.style.animationDelay=i*70+"ms";c.appendChild(el("span","sd"));c.appendChild(el("span","k",a.name||""));var pnm=el("b",null,a.person||"");var isGse=GEMINI_AGENTS.indexOf(a.id)>=0;pnm.appendChild(el("span","ai-src "+(isGse?"ge":"cl"),isGse?"✦ Gemini":"◈ Claude"));c.appendChild(pnm);c.appendChild(el("small",null,a.activity||"Waiting for first run"));c.appendChild(el("small",null,(a.schedule||"")+(a.lastRun?" · last "+ago(a.lastRun):"")));c.title=a.focus||"";box.appendChild(c)});
   var rk=$("seoRk");rk.textContent="";var last=R[R.length-1];
   if(!last)rk.appendChild(el("p","empty","Rankings come from Google Sheets (Apps Script runs every 4h). Set up the script below to see positions here."));
   else(last.rows||[]).forEach(function(r,i){var hist=R.slice(-14).map(function(d){var x=(d.rows||[]).filter(function(y){return y.kw===r.kw})[0];return x&&x.pos?x.pos:null});
