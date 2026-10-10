@@ -617,8 +617,8 @@ var RES={approved:["ok","Approved. Copy it and post it yourself, then tap “I p
 var HUES=["#0b5a73","#12806e","#7a4fb5","#c0602b","#2a76d6","#a33d6a","#5f7d1f","#8a6d1c","#2f6f8f","#9b4d2e","#48607a"];
 var DEPTS=[{name:"Growth",head:"growth-agent",staff:[]},{name:"Website",head:"site-agent",staff:[]},{name:"Business development",head:"linkedin-prospector",staff:[]}];
 var STEPS=["Research","Write","Edit","Your OK","Posted"];
-var GEMINI_AGENTS=["seo-scout","growth-agent","site-agent","linkedin-prospector"];
-var AGENT_MODELS={"seo-scout":"gemini-3.5-flash","growth-agent":"gemini-3.5-flash","site-agent":"gemini-3.5-flash","linkedin-prospector":"gemini-3.5-flash","growth-ceo":"claude-haiku-4-5"};
+var GEMINI_AGENTS=["seo-scout","growth-agent","site-agent","linkedin-prospector","seo-fixer","seo-doctor","seo-rank-watcher"];
+var AGENT_MODELS={"seo-scout":"gemini-3.5-flash","growth-agent":"gemini-3.5-flash","site-agent":"gemini-3.5-flash","linkedin-prospector":"gemini-3.5-flash","seo-fixer":"gemini-3.5-flash","seo-doctor":"gemini-3.5-flash","seo-rank-watcher":"gemini-3.5-flash","growth-ceo":"claude-haiku-4-5"};
 function $(i){return document.getElementById(i)}
 function byOrder(a,b){return(a.order||0)-(b.order||0)}
 function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
